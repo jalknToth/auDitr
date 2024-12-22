@@ -1,0 +1,274 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+set -e
+
+command -v python3 >/dev/null 2>&1 || { echo >&2 "Python3 is required but not installed.  Aborting."; exit 1; }
+command -v virtualenv >/dev/null 2>&1 || { python3 -m pip install --user virtualenv; }
+
+gitignore() {
+    echo -e "${YELLOW}♠︎ Generating .gitignore file${NC}"
+    cat > .gitignore << EOL
+.vscode
+__pycache__
+*.pyc
+.venv
+.env
+EOL
+}
+
+createUrlPersons() {
+    echo -e "${YELLOW}🔧 Creating persons urls${NC}"
+    touch auditor/persons/urls.py
+    cat > auditor/persons/urls.py << EOL
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('persons/', views.persons, name='persons'),
+    path('persons/details/<int:id>', views.details, name='details'),
+
+]
+EOL
+}
+
+createModels(){
+    echo -e "${YELLOW}🔧 Creating persons models${NC}"
+    rm auditor/persons/models.py
+    touch auditor/persons/models.py
+    cat > auditor/persons/models.py << EOL
+from django.db import models
+
+class Person(models.Model):
+    firstname = models.CharField(max_length=255)
+    lastname = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+    jobTitle = models.CharField(max_length=255)
+
+EOL
+}
+
+createViews(){
+    echo -e "${YELLOW}🔧 Creating persons views${NC}"
+    rm auditor/persons/views.py
+    touch auditor/persons/views.py
+    cat > auditor/persons/views.py << EOL
+from django.http import HttpResponse
+from django.template import loader
+from .models import Person
+
+def persons(request):
+    persons = Person.objects.all().values()
+    template = loader.get_template('persons.html')
+    context = {
+        'persons': persons,
+    }
+    return HttpResponse(template.render(context, request))
+
+def details(request, id):
+    person = Person.objects.get(id=id)
+    template = loader.get_template('details.html')
+    context = {
+        'person': person,
+    }
+    return HttpResponse(template.render(context, request))
+
+def main(request):
+    template = loader.get_template('main.html')
+    return HttpResponse(template.render())
+
+def testing(request):
+    template = loader.get_template('template.html')
+    context = {
+        'fruits': ['Black', 'White', 'Yellow'],   
+    }
+    return HttpResponse(template.render(context, request))
+
+EOL
+}
+
+createUrlAuditor() {
+    echo -e "${YELLOW}🔧 Creating auditor urls${NC}"
+    rm auditor/auditor/urls.py
+    touch auditor/auditor/urls.py
+    cat > auditor/auditor/urls.py << EOL
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.main, name='main'),
+    path('persons/', views.persons, name='persons'),
+    path('persons/details/<int:id>', views.details, name='details'),
+]
+
+EOL
+}
+
+createAdmin() {
+    echo -e "${YELLOW}🔧 Creating admin${NC}"
+    rm auditor/persons/admin.py
+    touch auditor/persons/admin.py
+    cat > auditor/persons/admin.py << EOL
+from django.contrib import admin
+from .models import Person
+
+class PersonAdmin(admin.ModelAdmin):
+    list_display = ("firstname", "lastname", "jobTitle",)
+
+admin.site.register(Person, PersonAdmin)
+
+EOL
+}
+
+createSettings() {
+    echo -e "${YELLOW}🔧 Modifying auditor settings${NC}"
+    rm auditor/auditor/settings.py
+    touch auditor/auditor/settings.py
+    cat > auditor/auditor/settings.py << EOL
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-6)&0vmqoo=lc-)k-5@wiw(-)-w%wl0s@77yl#4c4=$+ejt@kxo'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'persons'
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'auditor.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'auditor.wsgi.application'
+
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Password validation
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+STATIC_URL = 'static/'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+ 
+EOL
+}
+
+main() {
+    echo -e "${YELLOW}🔧 Auditor Application Initialization${NC}"
+
+    touch .gitignore .env
+    gitignore
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install --upgrade pip setuptools wheel
+    pip install --upgrade pip
+    pip install django whitenoise django-bootstrap-v5
+
+    #start Django project
+    django-admin startproject auditor
+
+    #move to project directory
+    cd auditor
+
+    #start new app
+    python3 manage.py startapp persons
+
+    #create urls in persons app
+    cd ..
+    createUrlPersons
+    createModels
+    createViews
+    createAdmin
+    createUrlAuditor
+    createSettings
+    
+    
+    echo -e "${GREEN}🎉 Project is ready! run 'python manage.py runserver' to start.${NC}"
+}
+
+main
