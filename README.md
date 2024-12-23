@@ -10,16 +10,16 @@ git clone https://github.com/jalknToth/auDitr.git
 chmod +x run.sh
 ./run.sh
 ```
-The script will:
-- 🔧 Create auditor views
-- 🔧 Create persons urls
-- 🔧 Create persons models
-- 🔧 Create persons views
-- 🔧 Create admin
-- 🔧 Create auditor urls
-- 🔧 Modify auditor settings
-- 🔧 Create templates
-- 🔧 Set Admin User: input username, email and password
+The script will create:
+- 🔧 Persons urls
+- 🔧 Persons models
+- 🔧 Persons views
+- 🔧 Auditor views
+- 🔧 Auditor urls
+- 🔧 Auditor settings
+- 🔧 Templates
+- 🔧 Admin
+- 🔧 Admin User: input username, email and password
 
 3. **Open admin**
 Run inside auditor
