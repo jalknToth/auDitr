@@ -10,8 +10,28 @@ git clone https://github.com/jalknToth/auDitr.git
 chmod +x run.sh
 ./run.sh
 ```
+The script will:
+🔧 Create auditor views
+🔧 Create persons urls
+🔧 Create persons models
+🔧 Create persons views
+🔧 Create admin
+🔧 Create auditor urls
+🔧 Modify auditor settings
+🔧 Create templates
+🔧 Set Admin User: input username, email and password
 
-24. open http://127.0.0.1:8000/admin/
+3. **Open admin**
+Run inside auditor
+```
+python3 manage.py runserver
+```
+To create a new admin user run
+```
+python3 manage.py createsuperuser
+```
+Then open http://127.0.0.1:8000/admin
+
 <table>
   <tr>
     <td><img src="screenshots/login.png" alt="login" width="200px"></td>

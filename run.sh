@@ -49,8 +49,8 @@ from . import views
 
 urlpatterns = [
     path('persons/', views.persons, name='persons'),
-    path('persons/details/<int:id>', views.details, name='details'),
-
+    path('persons/<int:id>/', views.details, name='details'), 
+    path('', views.main, name='main'), 
 ]
 EOL
 }
@@ -115,13 +115,12 @@ createUrlAuditor() {
     rm auditor/auditor/urls.py
     touch auditor/auditor/urls.py
     cat > auditor/auditor/urls.py << EOL
-from django.urls import path
-from . import views
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path('', views.main, name='main'),
-    path('persons/', views.persons, name='persons'),
-    path('persons/details/<int:id>', views.details, name='details'),
+    path('admin/', admin.site.urls), 
+    path('', include('persons.urls')), 
 ]
 
 EOL
@@ -160,7 +159,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6)&0vmqoo=lc-)k-5@wiw(-)-w%wl0s@77yl#4c4=$+ejt@kxo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -171,11 +170,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'persons'
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -248,6 +249,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles' 
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -360,12 +364,18 @@ EOL
 }
 
 createSuperUser() {
-    echo -e "${YELLOW}🔧 Setting server${NC}"
+    echo -e "${YELLOW}🔧 Creating Admin User${NC}"
     cd auditor
     python3 manage.py makemigrations persons
     python3 manage.py migrate
     python3 manage.py createsuperuser
-    
+
+}
+
+runServer() {
+    echo -e "${YELLOW}🔧 Setting server${NC}"
+    pip install whitenoise
+    python3 manage.py runserver
 }
 
 main() {
@@ -400,10 +410,12 @@ main() {
     createSettings
     createTemplates
     createSuperUser
-    
-    python3 manage.py runserver
-    
-    echo -e "${GREEN}🎉 Project is ready! run 'python3 manage.py runserver' to start.${NC}"
+    runServer
+
+    echo -e "${GREEN}🚀 Run 'python3 manage.py runserver' inside auditor${NC}"
+    echo -e "${GREEN}🚀 Run 'python3 manage.py createsuperuser' to create a new admin user"
+    echo -e "${GREEN}🚀 Then open admin at http://127.0.0.1:8000/admin"
+
 }
 
 main
