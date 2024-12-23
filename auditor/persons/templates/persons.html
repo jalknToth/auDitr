@@ -1,0 +1,20 @@
+{% extends "master.html" %}
+
+{% block title %}
+  My app - List of all persons
+{% endblock %}
+
+
+{% block content %}
+
+  <p><a href="/">HOME</a></p>
+
+  <h1>persons</h1>
+  
+  <ul>
+    {% for x in persons %}
+      <li><a href="details/{{ x.id }}">{{ x.firstname }} {{ x.lastname }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+

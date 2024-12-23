@@ -20,6 +20,26 @@ __pycache__
 EOL
 }
 
+createAuditorViews() {
+    echo -e "${YELLOW}🔧 Creating auditor views${NC}"
+    touch auditor/auditor/views.py
+    cat > auditor/auditor/views.py << EOL
+from django.shortcuts import render
+from persons.models import Person
+
+def main(request):
+    return render(request, 'main.html')
+
+def persons(request):  # Now in auditor/views.py
+    persons = Person.objects.all()
+    return render(request, 'persons.html', {'persons': persons})
+
+def details(request, id):  # Now in auditor/views.py
+    person = Person.objects.get(id=id)
+    return render(request, 'details.html', {'person': person})
+EOL
+}
+
 createUrlPersons() {
     echo -e "${YELLOW}🔧 Creating persons urls${NC}"
     touch auditor/persons/urls.py
@@ -140,9 +160,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6)&0vmqoo=lc-)k-5@wiw(-)-w%wl0s@77yl#4c4=$+ejt@kxo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -237,6 +257,117 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EOL
 }
 
+createTemplates() {
+    echo -e "${YELLOW}🔧 Creating templates${NC}"
+    mkdir auditor/persons/templates
+    touch auditor/persons/templates/master.html
+    cat > auditor/persons/templates/master.html << EOL
+    <!DOCTYPE html>
+<html>
+<head>
+<title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+
+{% block content %}
+{% endblock %}
+
+</body>
+</html>
+
+EOL
+
+    touch auditor/persons/templates/persons.html
+    cat > auditor/persons/templates/persons.html << EOL
+{% extends "master.html" %}
+
+{% block title %}
+  My app - List of all persons
+{% endblock %}
+
+
+{% block content %}
+
+  <p><a href="/">HOME</a></p>
+
+  <h1>persons</h1>
+  
+  <ul>
+    {% for x in persons %}
+      <li><a href="details/{{ x.id }}">{{ x.firstname }} {{ x.lastname }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+EOL
+
+    touch auditor/persons/templates/details.html
+    cat > auditor/persons/templates/details.html << EOL
+{% extends "master.html" %}
+
+{% block title %}
+Details about {{ person.firstname }} {{ person.lastname }}
+{% endblock %}
+
+
+{% block content %}
+<h1>{{ person.firstname }} {{ person.lastname }}</h1>
+
+<p>Phone {{ person.phone }}</p>
+<p>Job Title: {{ person.jobTitle }}</p>
+
+<p>Back to <a href="/persons">Persons</a></p>
+
+{% endblock %}
+
+EOL
+
+    touch auditor/persons/templates/main.html
+    cat > auditor/persons/templates/main.html << EOL
+{% extends "master.html" %}
+
+{% block title %}
+My app
+{% endblock %}
+
+
+{% block content %}
+<h1>My app</h1>
+
+<h3>Persons</h3>
+
+<p>Check out all our <a href="persons/">persons</a></p>
+
+{% endblock %}
+
+EOL
+
+    touch auditor/persons/templates/404.html
+    cat > auditor/persons/templates/404.html << EOL
+<!DOCTYPE html>
+<html>
+<title>Wrong address</title>
+<body>
+
+<h1>Ooops!</h1>
+
+<h2>I cannot find the file you requested!</h2>
+
+</body>
+</html>
+
+EOL
+}
+
+createSuperUser() {
+    echo -e "${YELLOW}🔧 Setting server${NC}"
+    cd auditor
+    python3 manage.py makemigrations persons
+    python3 manage.py migrate
+    python3 manage.py createsuperuser
+    
+}
+
 main() {
     echo -e "${YELLOW}🔧 Auditor Application Initialization${NC}"
 
@@ -260,15 +391,19 @@ main() {
 
     #create urls in persons app
     cd ..
+    createAuditorViews
     createUrlPersons
     createModels
     createViews
     createAdmin
     createUrlAuditor
     createSettings
+    createTemplates
+    createSuperUser
     
+    python3 manage.py runserver
     
-    echo -e "${GREEN}🎉 Project is ready! run 'python manage.py runserver' to start.${NC}"
+    echo -e "${GREEN}🎉 Project is ready! run 'python3 manage.py runserver' to start.${NC}"
 }
 
 main
