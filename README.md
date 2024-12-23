@@ -11,15 +11,15 @@ chmod +x run.sh
 ./run.sh
 ```
 The script will create:
-- 🔧 Persons urls
-- 🔧 Persons models
-- 🔧 Persons views
+- 🔧 Admin User: just input username, email and password
 - 🔧 Auditor views
 - 🔧 Auditor urls
 - 🔧 Auditor settings
+- 🔧 Persons urls
+- 🔧 Persons models
+- 🔧 Persons views
 - 🔧 Templates
 - 🔧 Admin
-- 🔧 Admin User: input username, email and password
 
 3. **Open admin**
 Run inside auditor
