@@ -18,8 +18,7 @@ The script will create:
 - 🔧 Persons urls
 - 🔧 Persons models
 - 🔧 Persons views
-- 🔧 Templates
-- 🔧 Admin
+- 🔧 All Templates
 
 3. **Open admin**
 Run inside auditor
